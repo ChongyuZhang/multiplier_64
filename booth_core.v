@@ -10,7 +10,7 @@ module booth_core #(parameter WIDTH=4)
 
 // state encodings
 parameter   IDLE   = 3'b000,
-				INIT   = 3'b001,
+			INIT   = 3'b001,
             ADD    = 3'b010,
             SHIFT  = 3'b011,
             OUTPUT = 3'b100;
@@ -25,12 +25,6 @@ begin
 	if (!rst)
 	begin
 		current_state <= IDLE;
-//		a_reg    <= 0;
-//		s_reg    <= 0;
-//		p_reg    <= 0;
-//		sum_reg  <= 0;
-//		iter_cnt <= 0;
-//		done     <= 0;
 	end
   else current_state <= next_state;
 end
@@ -38,18 +32,20 @@ end
 always@(current_state)
 	begin
 		case (current_state)
-			IDLE :begin
+			IDLE :	begin
 						iter_cnt <= 0;
 						done     <= 0;
 						next_state <= INIT;
 					end
-			INIT :begin
+					
+			INIT :	begin
 						a_reg    <= {multiplier[WIDTH-1],multiplier,{(WIDTH+1){1'b0}}};
 						s_reg    <= {{~{multiplier[WIDTH-1],multiplier}+1},{(WIDTH+1){1'b0}}};
 						p_reg    <= {{(WIDTH+1){1'b0}},multiplicand,1'b0};
 						next_state <= ADD;
 					end
-			ADD  :begin
+					
+			ADD  :	begin
 						case(p_reg[1:0])
 							2'b01       : sum_reg <= p_reg + a_reg;
 							2'b10       : sum_reg <= p_reg + s_reg;
@@ -59,7 +55,7 @@ always@(current_state)
 						next_state <= SHIFT;
 					end
 					
-			SHIFT:begin
+			SHIFT:	begin
 						p_reg <= {sum_reg[2*WIDTH+1],sum_reg[2*WIDTH+1:1]};
 						if (iter_cnt == WIDTH)
 							next_state <= OUTPUT;
@@ -67,11 +63,11 @@ always@(current_state)
 							next_state <= ADD;
 					end
 					
-			OUTPUT:begin
+			OUTPUT:	begin
 						product <= p_reg[2*WIDTH:1];
 						done <= 1'b1;
 						next_state <= IDLE;
-					 end
+					end
 		endcase
 	end
 endmodule
